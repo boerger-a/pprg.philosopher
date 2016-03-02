@@ -50,17 +50,23 @@ public class Philosopher extends Thread {
 		}
 	}
 
-	private synchronized long takeFork(int forkIndex) {
-		while (PhilosophersProblem.philosophers[index] != null && PhilosophersProblem.forks[forkIndex] != null) {
-			try {
-				System.out.printf("%s: #%03d is waiting for fork #%03d.\n", getCurrentTime(), index, forkIndex);
-				sleep(PhilosophersProblem.WAITING_TIME);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+	private long takeFork(int forkIndex) {
+		while (PhilosophersProblem.philosophers[index] != null) {
+			System.out.printf("%s: #%03d is waiting for fork #%03d.\n", getCurrentTime(), index, forkIndex);
+			synchronized (PhilosophersProblem.forks) {
+				if (PhilosophersProblem.forks[forkIndex] != null) {
+					try {
+						sleep(PhilosophersProblem.WAITING_TIME);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				} else {
+					PhilosophersProblem.forks[forkIndex] = this;
+					break;
+				}
 			}
 		}
 
-		PhilosophersProblem.forks[forkIndex] = this;
 		return forkIndex;
 	}
 
